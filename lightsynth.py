@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -5,19 +6,26 @@ Created on Fri Feb 10 11:08:15 2023
 
 @author: luca
 """
-pi = 0
+
+import os
+if os.uname()[4] == 'x86_64':
+	pi = 0
+else:
+	pi = 1
 
 import mido
-import librosa
+from audiolazy import midi2freq
 import numpy as np
 import time
 
-pins = [1,2,3]
+pins = [11,12,13]
 
 if pi:
     import pigpio
     pi = pigpio.pi()
     
+    print("setting up gpio")
+
     for pin in pins:
         pi.set_mode(pin, pigpio.OUTPUT)
 
@@ -28,6 +36,8 @@ freqs   = np.zeros(n_freq)
 vels    = np.zeros(n_freq)
 starts  = np.zeros(n_freq)
 changes = np.zeros(n_freq)
+
+print("listening")
 
 with mido.open_input() as inport:
     for msg in inport:
@@ -42,8 +52,8 @@ with mido.open_input() as inport:
                 #look for oldest register
                 writereg = np.argmin(starts)
             
-            print(f"writeeg: {writereg}")
-            freqs[writereg] = librosa.midi_to_hz(msg.note)
+            print(f"writereg: {writereg}")
+            freqs[writereg] = midi2freq(msg.note)
             vels[writereg] = msg.velocity
             starts[writereg] = time.time()
             changes[writereg] = True
