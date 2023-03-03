@@ -19,7 +19,8 @@ if os.uname()[4] == 'x86_64':
     pi = 0
     print("not running on a raspberry pi, only demo mode")
 else:
-	pi = 1
+    pi = 1
+    print("potentially running on a raspi, let's hope so")
 
 
 pins = [11,12,13]
