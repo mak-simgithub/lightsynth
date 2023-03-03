@@ -8,26 +8,64 @@ Created on Fri Feb 10 11:08:15 2023
 """
 
 import os
-if os.uname()[4] == 'x86_64':
-	pi = 0
-else:
-	pi = 1
-
+import sys
 import mido
 from audiolazy import midi2freq
 import numpy as np
 import time
 
+
+if os.uname()[4] == 'x86_64':
+    pi = 0
+    print("not running on a raspberry pi, only demo mode")
+else:
+	pi = 1
+
+
 pins = [11,12,13]
 
 if pi:
-    import pigpio
-    pi = pigpio.pi()
-    
     print("setting up gpio")
-
+    import pigpio
+    
+    try:
+        pi = pigpio.pi()
+    except:
+        print("gpio deamon not running, starting it...")
+        stream = os.popen("sudo pigpiod")
+        output = stream.read()
+    
     for pin in pins:
         pi.set_mode(pin, pigpio.OUTPUT)
+
+stream = os.popen('aconnect -l')
+output = stream.read()
+
+splits = output.split("client ")[1:]
+
+midi_devices = {}
+midi_through_id = -1
+
+for split in splits:
+    midi_id = int(split.split(":")[0])
+    name = split.split(": ")[1].split(" [")[0][1:-1]
+    if not (midi_id == 0 or midi_id == 128 or name == "Midi Through"):
+        midi_devices[midi_id] = name
+    elif name == "Midi Through":
+        midi_through_id = midi_id
+    
+if len(midi_devices):
+    if len(midi_devices) > 1:
+        device_id = input(f"{midi_devices}\nEnter id of device you want to connet to lightsynth: ")
+    else:
+        print(f"{midi_devices.values()} is only present MIDI device, connecting to it")
+        device_id = midi_devices.keys()
+else:
+    print("no MIDI device connected")
+    sys.exit()
+
+stream = os.popen(f"aconnect {device_id} {midi_through_id}")
+output = stream.read()
 
 
 n_freq = len(pins)
@@ -58,7 +96,7 @@ with mido.open_input() as inport:
             starts[writereg] = time.time()
             changes[writereg] = True
         else:
-            delreg = np.where(freqs == librosa.midi_to_hz(msg.note))[0][0]
+            delreg = np.where(freqs == midi2freq(msg.note))[0][0]
             vels[delreg] = 0
             changes[writereg] = True
             
