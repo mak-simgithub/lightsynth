@@ -58,8 +58,8 @@ if len(midi_devices):
     if len(midi_devices) > 1:
         device_id = input(f"{midi_devices}\nEnter id of device you want to connet to lightsynth: ")
     else:
-        print(f"{midi_devices.values()} is only present MIDI device, connecting to it")
-        device_id = midi_devices.keys()
+        print(f"{list(midi_devices.values())[0]} is only present MIDI device, connecting to it")
+        device_id = list(midi_devices.keys())[0]
 else:
     print("no MIDI device connected")
     sys.exit()
