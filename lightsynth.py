@@ -35,6 +35,7 @@ if pi:
         print("gpio deamon not running, starting it...")
         stream = os.popen("sudo pigpiod")
         output = stream.read()
+        pi = pigpio.pi()
     
     for pin in pins:
         pi.set_mode(pin, pigpio.OUTPUT)
