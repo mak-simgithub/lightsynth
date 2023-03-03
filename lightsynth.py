@@ -29,13 +29,7 @@ if pi:
     print("setting up gpio")
     import pigpio
     
-    try:
-        pi = pigpio.pi()
-    except:
-        print("gpio deamon not running, starting it...")
-        stream = os.popen("sudo pigpiod")
-        output = stream.read()
-        pi = pigpio.pi()
+    pi = pigpio.pi()
     
     for pin in pins:
         pi.set_mode(pin, pigpio.OUTPUT)
