@@ -92,6 +92,8 @@ waveforms_id = pi.wave_create()
 
 pi.wave_send_repeat(waveforms_id)
 
+time.sleep(5)
+
 pi.wave_tx_stop()
 
 pi.wave_clear()
