@@ -9,9 +9,10 @@ Created on Sat Mar  4 15:01:29 2023
 import pigpio
 import time
 
+pi = pigpio.pi()
 
 
-freq_1 = 423.43
+freq_1 = 432
 freq_2 = 6533
 freq_3 = 65.54
 
@@ -47,23 +48,22 @@ offs_1 = [on + int(cycle_1*duty_1) for on in ons_1]
 offs_2 = [on + int(cycle_2*duty_2) for on in ons_2]
 offs_3 = [on + int(cycle_3*duty_3) for on in ons_3]
 
-events_on_1 = {on: "on_1" for on in ons_1}
-events_off_1 = {off: "off_1" for off in offs_1}
+
+pin_1 = 24
+pin_2 = 12
+pin_3 = 13
+zero = 4
+
+events_on_1 = {on: f"on_{pin_1}" for on in ons_1}
+events_off_1 = {off: f"off_{pin_1}" for off in offs_1}
 
 events = {**events_on_1, **events_off_1}
 
-pin_1 = 11
-pin_2 = 12
-pin_3 = 13
-zero = 0
-
-pi = pigpio.pi()
-
 pi.set_mode(pin_1, pigpio.OUTPUT)
+pi.set_mode(zero, pigpio.OUTPUT)
 
 waveforms = []
 
-waveforms.append(pigpio.pulse(1))
 if init_1:
     waveforms.append(pigpio.pulse(1<<pin_1, 1<<zero, 1))
 else:
@@ -71,18 +71,18 @@ else:
 
 last_event = 0
 
-for key, value in events:
-    pin = value.split("_")[1]
-    event = int(value.split("_")[0])
+for key, value in sorted(events.items()):
+    pin = int(value.split("_")[1])
+    event = value.split("_")[0]
     delay = key - last_event
-    if event:
+    print(f"pin {pin} going {event} for {delay}")
+    if event == "on":
         waveforms.append(pigpio.pulse(1<<pin, 1<<zero, delay))
     else:
         waveforms.append(pigpio.pulse(1<<zero, 1<<pin, delay))
     last_event = key
 
-print(events)        
-
+pi.wave_clear()
 pi.wave_add_generic(waveforms)
 waveforms_id = pi.wave_create()
 
