@@ -9,6 +9,8 @@ Created on Sat Mar  4 15:01:29 2023
 import pigpio
 import time
 
+
+
 freq_1 = 423.43
 freq_2 = 6533
 freq_3 = 65.54
