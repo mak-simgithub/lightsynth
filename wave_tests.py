@@ -29,15 +29,7 @@ cycle_1 = int(1000000/freq_1)
 cycle_2 = int(1000000/freq_2)
 cycle_3 = int(1000000/freq_3)
 
-
-
 overall_cycle = int(1000000*60/bpm)
-
-print(cycle_1)
-print(cycle_2)
-print(cycle_3)
-
-print(overall_cycle)
 
 init_1 = int(-phase_1+duty_1)
 init_2 = int(-phase_2+duty_2)
@@ -60,9 +52,9 @@ events_off_1 = {off: "off_1" for off in offs_1}
 
 events = {**events_on_1, **events_off_1}
 
-pin_1 = 1
-pin_2 = 2
-pin_3 = 3
+pin_1 = 11
+pin_2 = 12
+pin_3 = 13
 zero = 0
 
 pi = pigpio.pi()
@@ -73,9 +65,9 @@ waveforms = []
 
 waveforms.append(pigpio.pulse(1))
 if init_1:
-    waveforms.append(pigpio.pulse(1))
+    waveforms.append(pigpio.pulse(1<<pin_1, 1<<zero, 1))
 else:
-    waveforms.append(pigpio.pulse(1))
+    waveforms.append(pigpio.pulse(1<<zero, 1<<pin_1, 1))
 
 last_event = 0
 
