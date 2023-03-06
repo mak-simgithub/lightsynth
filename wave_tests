@@ -7,6 +7,7 @@ Created on Sat Mar  4 15:01:29 2023
 """
 
 import pigpio
+import time
 
 freq_1 = 423.43
 freq_2 = 6533
@@ -85,13 +86,14 @@ for key, value in events:
     else:
         waveforms.append(pigpio.pulse(1<<zero, 1<<pin, delay))
     last_event = key
-        
+
+print(events)        
 
 pi.wave_add_generic(waveforms)
 waveforms_id = pi.wave_create()
 
 pi.wave_send_repeat(waveforms_id)
-
+print("starting wave")
 time.sleep(5)
 
 pi.wave_tx_stop()
