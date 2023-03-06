@@ -118,8 +118,6 @@ with mido.open_input() as inport:
                 wavereg.append(pigpio.pulse(1<<pin, 0, on_time*1000000))
                 wavereg.append(pigpio.pulse(0, 1<<pin, off_time*1000000))
                 
-                
-                
                 changes[reg] = False
             
             else:
