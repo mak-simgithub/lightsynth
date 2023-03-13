@@ -23,7 +23,7 @@ else:
     print("potentially running on a raspi, let's hope so")
 
 
-pins = [11,12,13]
+pins = [2,3,4]
 
 if pi:
     print("setting up gpio")
@@ -33,6 +33,8 @@ if pi:
     
     for pin in pins:
         pi.set_mode(pin, pigpio.OUTPUT)
+        pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
+        print(f"setting pin {pin} to input with pulldown")
 
 stream = os.popen('aconnect -l')
 output = stream.read()
@@ -107,11 +109,13 @@ with mido.open_input() as inport:
                 
                 duty_cycle = 0.5
                 frequency = freqs[reg]
-                cycle_length = 1/frequency
-                
-                on_time = cycle_length*duty_cycle
-                off_time = cycle_length*(1-duty_cycle)
+                cycle_length = int(1000000/frequency)
 
+                on_time = int(cycle_length*duty_cycle)
+                off_time = cycle_length-on_time
+
+                print(on_time)
+                print(off_time)
                 wavereg=[]
                 
                 #                              ON     OFF  DELAY
@@ -133,9 +137,10 @@ with mido.open_input() as inport:
 
         pi.wave_send_repeat(wave)
         
+        time.sleep(2)
         
-        #pi.wave_tx_stop() # stop waveform
+        pi.wave_tx_stop() # stop waveform
                 
-        #pi.wave_clear() # clear all waveforms
+        pi.wave_clear() # clear all waveforms
             
             
