@@ -104,43 +104,5 @@ with mido.open_input() as inport:
         print(starts)
         print(changes)
         
-        for reg, pin in enumerate(pins):
-            if changes[reg]:
-                
-                duty_cycle = 0.5
-                frequency = freqs[reg]
-                cycle_length = int(1000000/frequency)
-
-                on_time = int(cycle_length*duty_cycle)
-                off_time = cycle_length-on_time
-
-                print(on_time)
-                print(off_time)
-                wavereg=[]
-                
-                #                              ON     OFF  DELAY
-                wavereg.append(pigpio.pulse(1<<pin, 0, on_time*1000000))
-                wavereg.append(pigpio.pulse(0, 1<<pin, off_time*1000000))
-                
-                changes[reg] = False
-            
-            else:
-                
-                wavereg.append(pigpio.pulse(1<<pin, 0, on_time*1000000))
-                wavereg.append(pigpio.pulse(0, 1<<pin, off_time*1000000))
-                
-                
-        pi.wave_clear() # clear any existing waveforms
-        
-        pi.wave_add_generic(wavereg)
-        wave = pi.wave_create() # create and save id          
-
-        pi.wave_send_repeat(wave)
-        
-        time.sleep(2)
-        
-        pi.wave_tx_stop() # stop waveform
-                
-        pi.wave_clear() # clear all waveforms
-            
+       
             
