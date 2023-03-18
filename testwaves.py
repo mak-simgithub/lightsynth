@@ -16,14 +16,10 @@ flash_100=[] # flash every 100 ms
 #                              ON     OFF  DELAY
 
 flash_500.append(pigpio.pulse(1<<pins[0], 1<<pins[1], 500000))
-flash_500.append(pigpio.pulse(1<<pins[1], 1<<pins[0], 1))
+flash_500.append(pigpio.pulse(1<<pins[1], 1<<pins[0], 500000))
 
 flash_100.append(pigpio.pulse(1<<pins[0], 1<<pins[1], 100000))
 flash_100.append(pigpio.pulse(1<<pins[1], 1<<pins[0], 100000))
-
-for i in range(100,1000,100):
-    flash_500.append(pigpio.pulse(1<<pins[0], 1<<pins[1], i))
-
 
 pi.wave_clear() # clear any existing waveforms
 
@@ -33,11 +29,13 @@ f500 = pi.wave_create() # create and save id
 pi.wave_add_generic(flash_100) # 100 ms flashes
 f100 = pi.wave_create() # create and save id
 
+print("starting 500ms pulse")
 pi.wave_send_repeat(f500)
-print("starting wave")
 time.sleep(4)
-print("ending wave")
-
+print("starting 100ms pulse")
+pi.wave_send_repeat(f100)
+time.sleep(4)
+print("ending pulses")
 
 pi.wave_tx_stop() # stop waveform
 
