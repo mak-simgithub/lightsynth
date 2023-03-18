@@ -117,46 +117,57 @@ with mido.open_input() as inport:
         cycles = np.array([save_div(steps,freq) for freq in freqs])
 
         overall_cycle = int(steps*60/bpm)
-
-        events = {}
-        for i, cycle in enumerate(cycles):
-            if cycle:
-                for j in list(range(0, overall_cycle, cycle)):
-                    if j not in events:
-                        events[j] = [i+1]
+        
+        if sum(cycles):
+        
+            events = {}
+            for i, cycle in enumerate(cycles):
+                if cycle:
+                    for j in list(range(0, overall_cycle, cycle)):
+                        if j not in events:
+                            events[j] = [i+1]
+                        else:
+                            events[j].append(i+1)
+                        
+                        k = j + int(cycle*duty)  
+                        if k not in events:
+                            events[k] = [-(i+1)]
+                        else:
+                            events[k].append(-(i+1))
+    
+            waveforms = []
+    
+            last_event = 0
+    
+            events_sorted = dict(sorted(events.items()))
+    
+            for step, values in events_sorted.items():
+                for value in values:
+                    pin = abs(value)-1
+                    event = value>0
+                    delay = step - last_event
+                    print(f"pin {pins[pin]} going {event} for {delay} micro")
+                    if event:
+                        waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
                     else:
-                        events[j].append(i+1)
-                    
-                    k = j + int(cycle*duty)  
-                    if k not in events:
-                        events[k] = [-(i+1)]
-                    else:
-                        events[k].append(-(i+1))
-
-        waveforms = []
-
-        last_event = 0
-
-        events_sorted = dict(sorted(events.items()))
-
-        for step, values in events_sorted.items():
-            for value in values:
-                pin = abs(value)-1
-                event = value>0
-                delay = step - last_event
-                print(f"pin {pins[pin]} going {event} for {delay} micro")
-                if event:
-                    waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
-                else:
-                    waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
-                last_event = step
-        if pi_here:
-            pi.wave_clear()
-            pi.wave_add_generic(waveforms)
-            waveforms_id = pi.wave_create()
+                        waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
+                    last_event = step
+            if pi_here:
+                pi.wave_clear()
+                pi.wave_add_generic(waveforms)
+                waveforms_id = pi.wave_create()
+                
+                pi.wave_send_repeat(waveforms_id)
+                print("starting wave")
             
-            pi.wave_send_repeat(waveforms_id)
-            print("starting wave")
+            else:
+                pi.wave_tx_stop()
+            
+                pi.wave_clear()
+            
+                pi.write(pins[0],0)
+                pi.write(pins[1],0)
+                pi.write(pins[2],0)
             
         
 
