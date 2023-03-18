@@ -24,13 +24,14 @@ if pi_here:
 @atexit.register
 def say_goodbye():
     print("exiting now, goodbye")
-    pi.wave_tx_stop()
-
-    pi.wave_clear()
-
-    pi.write(pins[0],0)
-    pi.write(pins[1],0)
-    pi.write(pins[2],0)
+    if pi_here:
+        pi.wave_tx_stop()
+    
+        pi.wave_clear()
+    
+        pi.write(pins[0],0)
+        pi.write(pins[1],0)
+        pi.write(pins[2],0)
     
 
 freqs = np.array([130.81, 64.81, 196])*2
@@ -77,23 +78,23 @@ last_event = 0
 events_sorted = dict(sorted(events.items()))
 
 for step, values in events_sorted.items():
-    for val in values:
-        pin = abs(value-1)
+    for value in values:
+        pin = abs(value)-1
         event = value>0
         delay = step - last_event
-        print(f"pin {pin} going {event} for {delay}")
+        print(f"pin {pin} going {event} for {delay} micro")
         if event:
             waveforms.append(pigpio.pulse(1<<pin, 1<<zero, delay))
         else:
             waveforms.append(pigpio.pulse(1<<zero, 1<<pin, delay))
         last_event = step
-
-pi.wave_clear()
-pi.wave_add_generic(waveforms)
-waveforms_id = pi.wave_create()
-
-pi.wave_send_repeat(waveforms_id)
-print("starting wave")
+if pi_here:
+    pi.wave_clear()
+    pi.wave_add_generic(waveforms)
+    waveforms_id = pi.wave_create()
+    
+    pi.wave_send_repeat(waveforms_id)
+    print("starting wave")
 
 while True:
 	pass
