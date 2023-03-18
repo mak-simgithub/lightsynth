@@ -13,7 +13,19 @@ import mido
 from audiolazy import midi2freq
 import numpy as np
 import time
+import atexit
 
+@atexit.register
+def say_goodbye():
+    print("exiting now, goodbye")
+    if pi_here:
+        pi.wave_tx_stop()
+    
+        pi.wave_clear()
+    
+        pi.write(pins[0],0)
+        pi.write(pins[1],0)
+        pi.write(pins[2],0)
 
 if os.uname()[4] == 'x86_64':
     pi_here = 0
