@@ -12,9 +12,9 @@ import time
 pi = pigpio.pi()
 
 
-freq_1 = 432
-freq_2 = 6533
-freq_3 = 65.54
+freq_1 = 2
+freq_2 = 65.54
+freq_3 = 635
 
 bpm = 90
 
@@ -93,3 +93,7 @@ time.sleep(5)
 pi.wave_tx_stop()
 
 pi.wave_clear()
+
+pi.write(pin_1,0)
+pi.write(pin_2,0)
+pi.write(pin_3,0)

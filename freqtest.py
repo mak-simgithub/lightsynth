@@ -60,6 +60,7 @@ weird.append(pigpio.pulse(1<<pins[2], 1<<pins[0], 50000))
 weird.append(pigpio.pulse(1<<pins[0], 1<<zero, 50000))
 weird.append(pigpio.pulse(1<<pins[2], 1<<pins[0], 50000))
 weird.append(pigpio.pulse(1<<pins[0], 1<<zero, 50000))
+weird.append(pigpio.pulse(1<<pins[1], 1<<zero,0))
 
 pi.wave_clear() # clear any existing waveforms
 
