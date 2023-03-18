@@ -82,11 +82,11 @@ for step, values in events_sorted.items():
         pin = abs(value)-1
         event = value>0
         delay = step - last_event
-        print(f"pin {pin} going {event} for {delay} micro")
+        print(f"pin {pins[pin]} going {event} for {delay} micro")
         if event:
-            waveforms.append(pigpio.pulse(1<<pin, 1<<zero, delay))
+            waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
         else:
-            waveforms.append(pigpio.pulse(1<<zero, 1<<pin, delay))
+            waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
         last_event = step
 if pi_here:
     pi.wave_clear()
