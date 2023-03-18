@@ -33,9 +33,9 @@ def say_goodbye():
     pi.write(pins[2],0)
     
     
-freq_1 = 2
-freq_2 = 65.54
-freq_3 = 635
+freq_1 = 130.81*2
+freq_2 = 164.81*2
+freq_3 = 196*2
 
 bpm = 90
 
@@ -128,3 +128,5 @@ waveforms_id = pi.wave_create()
 pi.wave_send_repeat(waveforms_id)
 print("starting wave")
 
+while True:
+	pass
