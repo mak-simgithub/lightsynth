@@ -1,27 +1,28 @@
-import pigpio
 
+import pigpio
 import time
+
 pi = pigpio.pi()
 
-G1=3
-G2=4
+pins = [2,3,4]
 
-pi.set_mode(G1, pigpio.OUTPUT)
-pi.set_mode(G2, pigpio.OUTPUT)
+for pin in pins:
+    pi.set_mode(pin, pigpio.OUTPUT)
+    pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
 
 flash_500=[] # flash every 500 ms
 flash_100=[] # flash every 100 ms
 
 #                              ON     OFF  DELAY
 
-flash_500.append(pigpio.pulse(1<<G1, 1<<G2, 500000))
-flash_500.append(pigpio.pulse(1<<G2, 1<<G1, 1))
+flash_500.append(pigpio.pulse(1<<pin[0], 1<<pin[1], 500000))
+flash_500.append(pigpio.pulse(1<<pin[1], 1<<pin[0], 1))
 
-flash_100.append(pigpio.pulse(1<<G1, 1<<G2, 100000))
-flash_100.append(pigpio.pulse(1<<G2, 1<<G1, 100000))
+flash_100.append(pigpio.pulse(1<<pin[0], 1<<pin[1], 100000))
+flash_100.append(pigpio.pulse(1<<pin[1], 1<<pin[0], 100000))
 
 for i in range(100,1000,100):
-    flash_500.append(pigpio.pulse(1<<G1, 1<<G2, i))
+    flash_500.append(pigpio.pulse(1<<pin[0], 1<<pin[1], i))
 
 
 pi.wave_clear() # clear any existing waveforms
