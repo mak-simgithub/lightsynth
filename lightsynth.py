@@ -24,6 +24,7 @@ else:
 
 
 pins = [2,3,4]
+zero = 5
 
 if pi_here:
     print("setting up gpio")
@@ -35,6 +36,7 @@ if pi_here:
         pi.set_mode(pin, pigpio.OUTPUT)
         pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         print(f"setting pin {pin} to input with pulldown")
+    pi.set_mode(zero, pigpio.OUTPUT)
 
 stream = os.popen('aconnect -l')
 output = stream.read()
@@ -106,32 +108,30 @@ with mido.open_input() as inport:
                 print(f"taking freq {msg.note} from reg {delreg}")
                 
         #writing pulses        
-        cycles = np.array([int(steps/freq) for freq in freqs])
+        def save_div(a,b):
+            if b == 0:
+                return 0
+            else:
+                return int(a/b)
+
+        cycles = np.array([save_div(steps,freq) for freq in freqs])
 
         overall_cycle = int(steps*60/bpm)
 
         events = {}
         for i, cycle in enumerate(cycles):
-            for j in list(range(0, overall_cycle, cycle)):
-                if j not in events:
-                    events[j] = [i+1]
-                else:
-                    events[j].append(i+1)
-                
-                k = j + int(cycle*duty)  
-                if k not in events:
-                    events[k] = [-(i+1)]
-                else:
-                    events[k].append(-(i+1))
-                
-        pins=[2,3,4]
-        zero = 5                
-
-        if pi_here:
-            for pin in pins:
-                pi.set_mode(pin, pigpio.OUTPUT)
-            
-            pi.set_mode(zero, pigpio.OUTPUT)
+            if cycle:
+                for j in list(range(0, overall_cycle, cycle)):
+                    if j not in events:
+                        events[j] = [i+1]
+                    else:
+                        events[j].append(i+1)
+                    
+                    k = j + int(cycle*duty)  
+                    if k not in events:
+                        events[k] = [-(i+1)]
+                    else:
+                        events[k].append(-(i+1))
 
         waveforms = []
 

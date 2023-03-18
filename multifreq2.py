@@ -34,7 +34,7 @@ def say_goodbye():
         pi.write(pins[2],0)
     
 
-freqs = np.array([130.81, 64.81, 196])*2
+freqs = np.array([130.81, 64.81, 0])*2
 
 bpm = 90
 
@@ -43,24 +43,30 @@ steps = 1000000
 
 duty = 0.5
 
+def save_div(a,b):
+    if b == 0:
+        return 0
+    else:
+        return int(a/b)
 
-cycles = np.array([int(steps/freq) for freq in freqs])
+cycles = np.array([save_div(steps,freq) for freq in freqs])
 
 overall_cycle = int(steps*60/bpm)
 
 events = {}
 for i, cycle in enumerate(cycles):
-    for j in list(range(0, overall_cycle, cycle)):
-        if j not in events:
-            events[j] = [i+1]
-        else:
-            events[j].append(i+1)
-        
-        k = j + int(cycle*duty)  
-        if k not in events:
-            events[k] = [-(i+1)]
-        else:
-            events[k].append(-(i+1))
+    if cycle:
+        for j in list(range(0, overall_cycle, cycle)):
+            if j not in events:
+                events[j] = [i+1]
+            else:
+                events[j].append(i+1)
+            
+            k = j + int(cycle*duty)  
+            if k not in events:
+                events[k] = [-(i+1)]
+            else:
+                events[k].append(-(i+1))
         
 pins=[2,3,4]
 zero = 5                
