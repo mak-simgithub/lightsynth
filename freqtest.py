@@ -5,8 +5,7 @@ Created on Sat Mar 18 14:43:43 2023
 
 @author: luca
 """
-
-
+import numpy as np
 import pigpio
 import time
 
@@ -31,6 +30,10 @@ period = int(steps/freq)
 
 ontime = int(period*duty)
 offtime = period-ontime
+
+
+freqs = np.zeros(n_freq)
+
 
 
 flash_500=[] # flash every 500 ms
@@ -60,7 +63,6 @@ weird.append(pigpio.pulse(1<<pins[2], 1<<pins[0], 50000))
 weird.append(pigpio.pulse(1<<pins[0], 1<<zero, 50000))
 weird.append(pigpio.pulse(1<<pins[2], 1<<pins[0], 50000))
 weird.append(pigpio.pulse(1<<pins[0], 1<<zero, 50000))
-weird.append(pigpio.pulse(1<<pins[1], 1<<zero,0))
 
 pi.wave_clear() # clear any existing waveforms
 
