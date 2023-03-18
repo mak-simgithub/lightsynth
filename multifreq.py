@@ -9,6 +9,7 @@ Created on Sat Mar 18 15:28:40 2023
 import pigpio
 import time
 import os
+import atexit
 
 if os.uname()[4] == 'x86_64':
     pi_here = 0
@@ -20,7 +21,18 @@ else:
 if pi_here:
     pi = pigpio.pi()
 
+@atexit.register
+def say_goodbye():
+    print("exiting now, goodbye")
+    pi.wave_tx_stop()
 
+    pi.wave_clear()
+
+    pi.write(pins[0],0)
+    pi.write(pins[1],0)
+    pi.write(pins[2],0)
+    
+    
 freq_1 = 2
 freq_2 = 65.54
 freq_3 = 635
@@ -115,12 +127,4 @@ waveforms_id = pi.wave_create()
 
 pi.wave_send_repeat(waveforms_id)
 print("starting wave")
-time.sleep(5)
 
-pi.wave_tx_stop()
-
-pi.wave_clear()
-
-pi.write(pins[0],0)
-pi.write(pins[1],0)
-pi.write(pins[2],0)
