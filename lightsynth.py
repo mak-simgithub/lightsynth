@@ -15,7 +15,10 @@ import numpy as np
 import time
 import atexit
 
+import timeit
 
+
+start = timeit.timeit()
 
 if os.uname()[4] == 'x86_64':
     pi_here = 0
@@ -24,6 +27,9 @@ else:
     pi_here = 1
     print("potentially running on a raspi, let's hope so")
 
+end = timeit.timeit()
+print(f"pi check: {end - start}s")
+start = timeit.timeit()
 
 pins = [2,3,4]
 zero = 5
@@ -121,7 +127,9 @@ with mido.open_input() as inport:
         overall_cycle = int(steps*60/bpm)
         
         if sum(cycles):
-        
+            
+            start = timeit.timeit()
+            
             events = {}
             for i, cycle in enumerate(cycles):
                 if cycle:
@@ -136,7 +144,11 @@ with mido.open_input() as inport:
                             events[k] = [-(i+1)]
                         else:
                             events[k].append(-(i+1))
-    
+            
+            end = timeit.timeit()
+            print(f"constructing events: {end - start}s")
+            start = timeit.timeit()
+            
             waveforms = []
     
             last_event = 0
@@ -154,17 +166,30 @@ with mido.open_input() as inport:
                     else:
                         waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
                     last_event = step
+                    
+            end = timeit.timeit()
+            print(f"waveforms: {end - start}s")
+            start = timeit.timeit()
+            
             if pi_here:
                 pi.wave_clear()
                 pi.wave_add_generic(waveforms)
                 waveforms_id = pi.wave_create()
                 
+                end = timeit.timeit()
+                print(f"wavefroms2: {end - start}s")
+                start = timeit.timeit()
+                
                 pi.wave_send_repeat(waveforms_id)
+                
+                end = timeit.timeit()
+                print(f"send wave: {end - start}s")
+                start = timeit.timeit()
                 print("starting wave")
             
             else:
                 pi.wave_tx_stop()
-            
+                print("no note playing")
                 pi.wave_clear()
             
                 pi.write(pins[0],0)
