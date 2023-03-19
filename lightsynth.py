@@ -100,11 +100,11 @@ with mido.open_input() as inport:
             #note is being hit
             
             #look for empty register
-            hit_empty = np.where(freqs == 0)
+            hit_empty = np.where(freqs == 0)[0]
             
             if hit_empty.size:
                 #look for empty register
-                writereg = hit_empty[0][0]
+                writereg = hit_empty[0]
             else:
                 #look for oldest register
                 writereg = np.argmin(starts)
@@ -115,9 +115,9 @@ with mido.open_input() as inport:
             
         elif msg.type == 'note_off':
             #check if note still here
-            hit_note = np.where(freqs == midi2freq(msg.note))
-            if len(hit_note):
-                delreg = hit_note[0][0]
+            hit_note = np.where(freqs == midi2freq(msg.note))[0]
+            if hit_note.size:
+                delreg = hit_note[0]
                 freqs[delreg] = 0
                 #print(f"taking wave from pin {delreg}")
                 
