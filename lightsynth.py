@@ -95,8 +95,9 @@ print("listening")
 with mido.open_input() as inport:
     for msg in inport:
         print(msg)
+        pi.wave_tx_stop()
         if msg.type == 'note_on':
-            pi.wave_tx_stop()
+            
             #note is being hit
             
             #look for empty register
@@ -114,13 +115,19 @@ with mido.open_input() as inport:
             #print(f"writing {freqs[writereg]}Hz to pin {writereg}")
             
         elif msg.type == 'note_off':
-            pi.wave_tx_stop()
+            
             #check if note still here
             hit_note = np.where(freqs == midi2freq(msg.note))[0]
             if hit_note.size:
                 delreg = hit_note[0]
                 freqs[delreg] = 0
                 #print(f"taking wave from pin {delreg}")
+                
+        elif msg.type == "control_change":
+            if msg.control == 1:
+                duty = msg.value/127
+            elif: msg.control == 2:
+                divider = int(msg.value/4+1)
                 
         #writing pulses        
         def save_div(a,b):
