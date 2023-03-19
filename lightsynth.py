@@ -100,7 +100,7 @@ with mido.open_input() as inport:
             #note is being hit
             
             #look for empty register
-            hit_empty = np.where(freqs == 0)
+            hit_empty = len(np.where(freqs == 0))
             print(f"hit empty: {hit_empty}")
             if hit_empty:
                 #look for empty register
@@ -119,7 +119,7 @@ with mido.open_input() as inport:
             if len(hit_note):
                 delreg = hit_note[0][0]
                 freqs[delreg] = 0
-                print(f"taking {freqs[writereg]}Hz from pin {delreg}")
+                #print(f"taking wave from pin {delreg}")
                 
         #writing pulses        
         def save_div(a,b):
