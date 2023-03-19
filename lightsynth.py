@@ -15,10 +15,10 @@ import numpy as np
 import time
 import atexit
 
-import timeit
+import time
 
 
-start = timeit.timeit()
+start = time.time()
 
 if os.uname()[4] == 'x86_64':
     pi_here = 0
@@ -27,9 +27,9 @@ else:
     pi_here = 1
     print("potentially running on a raspi, let's hope so")
 
-end = timeit.timeit()
+end = time.time()
 print(f"pi check: {end - start}s")
-start = timeit.timeit()
+start = time.time()
 
 pins = [2,3,4]
 zero = 5
@@ -128,7 +128,7 @@ with mido.open_input() as inport:
         
         if sum(cycles):
             
-            start = timeit.timeit()
+            start = time.time()
             
             events = {}
             for i, cycle in enumerate(cycles):
@@ -145,9 +145,9 @@ with mido.open_input() as inport:
                         else:
                             events[k].append(-(i+1))
             
-            end = timeit.timeit()
+            end = time.time()
             print(f"constructing events: {end - start}s")
-            start = timeit.timeit()
+            start = time.time()
             
             waveforms = []
     
@@ -167,24 +167,24 @@ with mido.open_input() as inport:
                         waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
                     last_event = step
                     
-            end = timeit.timeit()
+            end = time.time()
             print(f"waveforms: {end - start}s")
-            start = timeit.timeit()
+            start = time.time()
             
             if pi_here:
                 pi.wave_clear()
                 pi.wave_add_generic(waveforms)
                 waveforms_id = pi.wave_create()
                 
-                end = timeit.timeit()
+                end = time.time()
                 print(f"wavefroms2: {end - start}s")
-                start = timeit.timeit()
+                start = time.time()
                 
                 pi.wave_send_repeat(waveforms_id)
                 
-                end = timeit.timeit()
+                end = time.time()
                 print(f"send wave: {end - start}s")
-                start = timeit.timeit()
+                start = time.time()
                 print("starting wave")
             
             else:
