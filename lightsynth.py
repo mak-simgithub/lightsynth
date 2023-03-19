@@ -126,8 +126,11 @@ with mido.open_input() as inport:
         elif msg.type == "control_change":
             if msg.control == 1:
                 duty = msg.value/127
-            elif: msg.control == 2:
+                print(f"setting duty to {duty}")
+            elif msg.control == 2:
                 divider = int(msg.value/4+1)
+                overall_cycle = int(steps*60/bpm/divider)
+                print(f"setting divider to {divider}")
                 
         #writing pulses        
         def save_div(a,b):
