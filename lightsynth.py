@@ -16,10 +16,8 @@ import numpy as np
 import time
 import atexit
 
-import time
+import math
 
-
-start = time.time()
 
 if os.uname()[4] == 'x86_64':
     pi_here = 0
@@ -28,9 +26,6 @@ else:
     pi_here = 1
     print("potentially running on a raspi, let's hope so")
 
-end = time.time()
-print(f"pi check: {end - start}s")
-start = time.time()
 
 pins = [2,3,4]
 zero = 5
@@ -76,19 +71,26 @@ else:
 stream = os.popen(f"aconnect {device_id} {midi_through_id}")
 output = stream.read()
 
-
 n_freq = len(pins)
 
 freqs   = np.zeros(n_freq)
 starts  = np.zeros(n_freq)
 
 bpm = 90
-divider = 8
+
 steps = 1000000
+factor_max = 4
+factor_min = 1/32
+limit_top = 124
 
-overall_cycle = int(steps*60/bpm/divider)
+a = steps*60/bpm*factor_max
+b = 1/limit_top*math.log2(factor_max/factor_min)
 
-duty = 0.5
+start_midi_lfo = 12
+overall_cycle = int(a/2**int(start_midi_lfo*b))
+
+start_midi_duty = 64
+duty = int(start_midi_duty/127)
 
 print("listening")
 
@@ -126,11 +128,12 @@ with mido.open_input() as inport:
         elif msg.type == "control_change":
             if msg.control == 1:
                 duty = msg.value/127
-                print(f"setting duty to {duty}")
+                #print(f"setting duty to {duty}")
             elif msg.control == 2:
-                divider = int(msg.value/4+1)
-                overall_cycle = int(steps*60/bpm/divider)
-                print(f"setting divider to {divider}")
+                #factor = factor_max/2**int(msg.value*b)
+                #overall_cycle = int(steps*60/bpm*factor)
+                #print(f"setting factor to {factor}")
+                overall_cycle = int(a/2**int(msg.value*b))
                 
         #writing pulses        
         def save_div(a,b):
@@ -161,10 +164,6 @@ with mido.open_input() as inport:
                         else:
                             events[k].append(-(i+1))
             
-            end = time.time()
-            print(f"constructing events: {end - start}s")
-            start = time.time()
-            
             waveforms = []
     
             last_event = 0
@@ -183,25 +182,14 @@ with mido.open_input() as inport:
                         waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
                     last_event = step
                     
-            end = time.time()
-            print(f"waveforms: {end - start}s")
-            start = time.time()
             
             if pi_here:
                 pi.wave_clear()
                 pi.wave_add_generic(waveforms)
                 waveforms_id = pi.wave_create()
                 
-                end = time.time()
-                print(f"wavefroms2: {end - start}s")
-                start = time.time()
-                
                 pi.wave_send_repeat(waveforms_id)
                 
-                end = time.time()
-                print(f"send wave: {end - start}s")
-                start = time.time()
-            
             else:
                 pi.wave_tx_stop()
                 print("no note playing")
