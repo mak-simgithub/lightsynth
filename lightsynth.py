@@ -100,9 +100,9 @@ with mido.open_input() as inport:
             #note is being hit
             
             #look for empty register
-            hit_empty = len(np.where(freqs == 0))
+            hit_empty = np.where(freqs == 0)
             print(f"hit empty: {hit_empty}")
-            if hit_empty:
+            if len(hit_empty):
                 #look for empty register
                 writereg = hit_empty[0][0]
             else:
