@@ -1,4 +1,5 @@
 
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -91,6 +92,8 @@ print("listening")
 
 with mido.open_input() as inport:
     for msg in inport:
+        pi.wave_tx_stop()
+        #pi.wave_clear()
         if msg.type == 'note_on':
             #note is being hit
             
@@ -107,7 +110,7 @@ with mido.open_input() as inport:
             starts[writereg] = time.time()
             print(f"writing reg{writereg} to freq {msg.note}")
             
-        else:
+        elif msg.type == 'note_off':
             #check if note still here
             hit_note = np.where(freqs == midi2freq(msg.note))
             if len(hit_note):
@@ -124,8 +127,8 @@ with mido.open_input() as inport:
 
         cycles = np.array([save_div(steps,freq) for freq in freqs])
 
-        overall_cycle = int(steps*60/bpm)
-        
+        overall_cycle = int(steps*60/bpm/8)
+
         if sum(cycles):
             
             start = time.time()
@@ -160,7 +163,7 @@ with mido.open_input() as inport:
                     pin = abs(value)-1
                     event = value>0
                     delay = step - last_event
-                    print(f"pin {pins[pin]} going {event} for {delay} micro")
+                    #print(f"pin {pins[pin]} going {event} for {delay} micro")
                     if event:
                         waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
                     else:
