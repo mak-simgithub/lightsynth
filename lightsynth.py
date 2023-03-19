@@ -101,9 +101,8 @@ with mido.open_input() as inport:
             
             #look for empty register
             hit_empty = np.where(freqs == 0)
-            print(f"hit empty: {len(hit_empty)}")
-            print(f"hit empty: {hit_empty}")
-            if len(hit_empty):
+            
+            if hit_empty.size:
                 #look for empty register
                 writereg = hit_empty[0][0]
             else:
