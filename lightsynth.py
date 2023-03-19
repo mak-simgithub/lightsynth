@@ -83,10 +83,12 @@ freqs   = np.zeros(n_freq)
 starts  = np.zeros(n_freq)
 
 bpm = 90
+divider = 8
+steps = 1000000
+
+overall_cycle = int(steps*60/bpm/divider)
 
 duty = 0.5
-
-steps = 1000000
 
 print("listening")
 
@@ -99,6 +101,7 @@ with mido.open_input() as inport:
             
             #look for empty register
             hit_empty = np.where(freqs == 0)
+            print(f"hit empty: {hit_empty}")
             if hit_empty:
                 #look for empty register
                 writereg = hit_empty[0][0]
@@ -108,7 +111,7 @@ with mido.open_input() as inport:
             
             freqs[writereg] = midi2freq(msg.note)
             starts[writereg] = time.time()
-            print(f"writing reg{writereg} to freq {msg.note}")
+            #print(f"writing {freqs[writereg]}Hz to pin {writereg}")
             
         elif msg.type == 'note_off':
             #check if note still here
@@ -116,7 +119,7 @@ with mido.open_input() as inport:
             if len(hit_note):
                 delreg = hit_note[0][0]
                 freqs[delreg] = 0
-                print(f"taking freq {msg.note} from reg {delreg}")
+                print(f"taking {freqs[writereg]}Hz from pin {delreg}")
                 
         #writing pulses        
         def save_div(a,b):
@@ -127,7 +130,6 @@ with mido.open_input() as inport:
 
         cycles = np.array([save_div(steps,freq) for freq in freqs])
 
-        overall_cycle = int(steps*60/bpm/8)
 
         if sum(cycles):
             
@@ -188,7 +190,6 @@ with mido.open_input() as inport:
                 end = time.time()
                 print(f"send wave: {end - start}s")
                 start = time.time()
-                print("starting wave")
             
             else:
                 pi.wave_tx_stop()
