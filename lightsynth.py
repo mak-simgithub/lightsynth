@@ -206,23 +206,22 @@ with mido.open_input() as inport:
             
         elif msg.type == "control_change":
             if msg.control == 1:
-                duty = duties[msg.value]
-                print(f"setting duty to {duty}")
-                
                 if msg.value%midi_knob_update == 0:
+                    duty = duties[msg.value]
+                    print(f"setting duty to {duty}")
+                
                     updating_pulses()
                 
             elif msg.control == 2:
-
-                overall_cycle = cycles[msg.value]
-                factor = factors[msg.value]
-                
-                if factor < 1:
-                    print(f"lfo: 1/{int(1/factor)}")
-                else:
-                    print(f"lfo: {int(factor)}")
-                    
                 if msg.value%midi_knob_update == 0:
+                    overall_cycle = cycles[msg.value]
+                    factor = factors[msg.value]
+                    
+                    if factor < 1:
+                        print(f"lfo: 1/{int(1/factor)}")
+                    else:
+                        print(f"lfo: {int(factor)}")
+                        
                     updating_pulses()
             
             elif msg.control == 3:
