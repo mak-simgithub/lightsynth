@@ -69,7 +69,6 @@ else:
 stream = os.popen(f"aconnect {device_id} {midi_through_id}")
 output = stream.read()
 
-
 n_freq = len(pins)
 
 freqs   = np.zeros(n_freq)
@@ -126,8 +125,9 @@ with mido.open_input() as inport:
         elif msg.type == "control_change":
             if msg.control == 1:
                 duty = msg.value/127
-                print(f"setting duty to {duty}")
+                #print(f"setting duty to {duty}")
             elif msg.control == 2:
+
                 overall_cycle = int(a/2**int(msg.value*b))
                 factor = factor_max/2**int(124/limit_top*math.log2(factor_max/factor_min)
                 if factor < 1:
@@ -135,6 +135,7 @@ with mido.open_input() as inport:
 		else:
                     print(f"LFO: {int(factor)}")
         #writing pulses
+
         def save_div(a,b):
             if b == 0:
                 return 0
@@ -183,6 +184,7 @@ with mido.open_input() as inport:
                 waveforms_id = pi.wave_create()
 
                 pi.wave_send_repeat(waveforms_id)
+
 
             else:
                 pi.wave_tx_stop()
