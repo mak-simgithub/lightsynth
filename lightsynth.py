@@ -129,7 +129,7 @@ with mido.open_input() as inport:
             elif msg.control == 2:
 
                 overall_cycle = int(a/2**int(msg.value*b))
-                factor = factor_max/2**int(124/midi_knob_top*math.log2(factor_max/factor_min))
+                factor = factor_max/2**int(msg.value/midi_knob_top*math.log2(factor_max/factor_min))
                 if factor < 1:
                     print(f"LFO: 1/{int(1/factor)}")
         else:
