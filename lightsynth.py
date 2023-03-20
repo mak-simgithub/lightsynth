@@ -41,7 +41,7 @@ if pi_here:
         print(f"setting pin {pin} to input with pulldown")
     pi.set_mode(zero, pigpio.OUTPUT)
 
-def setting_pins_low():
+def setting_pins_low(*args):
     print("exiting now, goodbye")
     if pi_here:
         pi.wave_tx_stop()
@@ -53,8 +53,8 @@ def setting_pins_low():
         pi.write(pins[2],0)
         
 atexit.register(setting_pins_low)
-signal.signal(signal.SIGTERM, setting_pins_low)
-signal.signal(signal.SIGINT, setting_pins_low)
+#signal.signal(signal.SIGTERM, setting_pins_low)
+#signal.signal(signal.SIGINT, setting_pins_low)
 
 stream = os.popen('aconnect -l')
 output = stream.read()
