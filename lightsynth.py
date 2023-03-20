@@ -183,10 +183,9 @@ with mido.open_input() as inport:
                 writereg = np.argmin(starts)
                 
             starts_modified = starts+freqs*time.time()
-            writereg2 = np.argmin(starts_modified)
+            writereg = np.argmin(starts_modified)
             
-            print(f"reg1: {writereg}, reg2: {writereg2}")
-
+            
             freqs[writereg] = midi2freq(msg.note)
             starts[writereg] = time.time()
             print(f"writing {freqs[writereg]}Hz to pin {writereg}")
