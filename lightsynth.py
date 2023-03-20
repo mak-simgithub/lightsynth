@@ -125,7 +125,7 @@ with mido.open_input() as inport:
         elif msg.type == "control_change":
             if msg.control == 1:
                 duty = msg.value/127
-                #print(f"setting duty to {duty}")
+                print(f"setting duty to {duty}")
             elif msg.control == 2:
 
                 overall_cycle = int(a/2**int(msg.value*b))
