@@ -15,11 +15,7 @@ from audiolazy import midi2freq
 import numpy as np
 import time
 import atexit
-
-import time
-
-
-start = time.time()
+import math
 
 if os.uname()[4] == 'x86_64':
     pi_here = 0
@@ -28,9 +24,6 @@ else:
     pi_here = 1
     print("potentially running on a raspi, let's hope so")
 
-end = time.time()
-print(f"pi check: {end - start}s")
-start = time.time()
 
 pins = [2,3,4]
 zero = 5
@@ -38,9 +31,9 @@ zero = 5
 if pi_here:
     print("setting up gpio")
     import pigpio
-    
+
     pi = pigpio.pi()
-    
+
     for pin in pins:
         pi.set_mode(pin, pigpio.OUTPUT)
         pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
@@ -62,7 +55,7 @@ for split in splits:
         midi_devices[midi_id] = name
     elif name == "Midi Through":
         midi_through_id = midi_id
-    
+
 if len(midi_devices):
     if len(midi_devices) > 1:
         device_id = input(f"{midi_devices}\nEnter id of device you want to connet to lightsynth: ")
@@ -83,56 +76,65 @@ freqs   = np.zeros(n_freq)
 starts  = np.zeros(n_freq)
 
 bpm = 90
-divider = 8
+
 steps = 1000000
+factor_max = 4
+factor_min = 1/32
 
-overall_cycle = int(steps*60/bpm/divider)
+midi_knob_top = 124
 
-duty = 0.5
+a = steps*60/bpm*factor_max
+b = 1/midi_knob_top*math.log2(factor_max/factor_min)
+
+start_midi_lfo = 12
+overall_cycle = int(a/2**int(start_midi_lfo*b))
+
+start_midi_duty = 64
+duty = int(start_midi_duty/127)
 
 print("listening")
 
 with mido.open_input() as inport:
     for msg in inport:
-        print(msg)
         pi.wave_tx_stop()
         if msg.type == 'note_on':
-            
+
             #note is being hit
-            
+
             #look for empty register
             hit_empty = np.where(freqs == 0)[0]
-            
+
             if hit_empty.size:
                 #look for empty register
                 writereg = hit_empty[0]
             else:
                 #look for oldest register
                 writereg = np.argmin(starts)
-            
+
             freqs[writereg] = midi2freq(msg.note)
             starts[writereg] = time.time()
-            #print(f"writing {freqs[writereg]}Hz to pin {writereg}")
-            
+            print(f"writing {freqs[writereg]}Hz to pin {writereg}")
+
         elif msg.type == 'note_off':
-            
+
             #check if note still here
             hit_note = np.where(freqs == midi2freq(msg.note))[0]
             if hit_note.size:
                 delreg = hit_note[0]
                 freqs[delreg] = 0
-                #print(f"taking wave from pin {delreg}")
-                
+                print(f"taking wave from pin {delreg}")
         elif msg.type == "control_change":
             if msg.control == 1:
                 duty = msg.value/127
                 print(f"setting duty to {duty}")
             elif msg.control == 2:
-                divider = int(msg.value/4+1)
-                overall_cycle = int(steps*60/bpm/divider)
-                print(f"setting divider to {divider}")
-                
-        #writing pulses        
+                overall_cycle = int(a/2**int(msg.value*b))
+                factor = factor_max/2**int(124/limit_top*math.log2(factor_max/factor_min)
+                if factor < 1:
+                    print(f"LFO: 1/{int(1/factor)}")
+		else:
+                    print(f"LFO: {int(factor)}")
+        #writing pulses
         def save_div(a,b):
             if b == 0:
                 return 0
@@ -141,11 +143,7 @@ with mido.open_input() as inport:
 
         cycles = np.array([save_div(steps,freq) for freq in freqs])
 
-
         if sum(cycles):
-            
-            start = time.time()
-            
             events = {}
             for i, cycle in enumerate(cycles):
                 if cycle:
@@ -154,74 +152,56 @@ with mido.open_input() as inport:
                             events[j] = [i+1]
                         else:
                             events[j].append(i+1)
-                        
-                        k = j + int(cycle*duty)  
+
+                        k = j + int(cycle*duty)
                         if k not in events:
                             events[k] = [-(i+1)]
                         else:
                             events[k].append(-(i+1))
-            
-            end = time.time()
-            print(f"constructing events: {end - start}s")
-            start = time.time()
-            
+
             waveforms = []
-    
+
             last_event = 0
-    
+
             events_sorted = dict(sorted(events.items()))
-    
+
             for step, values in events_sorted.items():
                 for value in values:
                     pin = abs(value)-1
                     event = value>0
                     delay = step - last_event
-                    #print(f"pin {pins[pin]} going {event} for {delay} micro")
+
                     if event:
                         waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
                     else:
                         waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
                     last_event = step
-                    
-            end = time.time()
-            print(f"waveforms: {end - start}s")
-            start = time.time()
-            
+
             if pi_here:
                 pi.wave_clear()
                 pi.wave_add_generic(waveforms)
                 waveforms_id = pi.wave_create()
-                
-                end = time.time()
-                print(f"wavefroms2: {end - start}s")
-                start = time.time()
-                
+
                 pi.wave_send_repeat(waveforms_id)
-                
-                end = time.time()
-                print(f"send wave: {end - start}s")
-                start = time.time()
-            
+
             else:
                 pi.wave_tx_stop()
                 print("no note playing")
                 pi.wave_clear()
-            
+
                 pi.write(pins[0],0)
                 pi.write(pins[1],0)
                 pi.write(pins[2],0)
-            
-        
+
 
 @atexit.register
-def say_goodbye():
+def setting_pins_low():
     print("exiting now, goodbye")
     if pi_here:
         pi.wave_tx_stop()
-    
+
         pi.wave_clear()
-         
+
         pi.write(pins[0],0)
         pi.write(pins[1],0)
-        pi.write(pins[2],0)  
-            
+        pi.write(pins[2],0)
