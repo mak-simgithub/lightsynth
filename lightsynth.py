@@ -85,11 +85,77 @@ midi_knob_top = 124
 a = steps*60/bpm*factor_max
 b = 1/midi_knob_top*math.log2(factor_max/factor_min)
 
+cycles = [int(a/2**int(i*b)) for i in range(128)]
+factors = [factor_max/2**int(i/midi_knob_top*math.log2(factor_max/factor_min)) for i in range(128)]
+
 start_midi_lfo = 12
-overall_cycle = int(a/2**int(start_midi_lfo*b))
+overall_cycle = cycles[start_midi_lfo]
 
 start_midi_duty = 64
 duty = int(start_midi_duty/127)
+
+def updating_pulses():
+    #writing pulses
+
+    def save_div(a,b):
+        if b == 0:
+            return 0
+        else:
+            return int(a/b)
+
+    cycles = np.array([save_div(steps,freq) for freq in freqs])
+
+    if sum(cycles):
+        events = {}
+        for i, cycle in enumerate(cycles):
+            if cycle:
+                for j in list(range(0, overall_cycle, cycle)):
+                    if j not in events:
+                        events[j] = [i+1]
+                    else:
+                        events[j].append(i+1)
+
+                    k = j + int(cycle*duty)
+                    if k not in events:
+                        events[k] = [-(i+1)]
+                    else:
+                        events[k].append(-(i+1))
+
+        waveforms = []
+
+        last_event = 0
+
+        events_sorted = dict(sorted(events.items()))
+
+        for step, values in events_sorted.items():
+            for value in values:
+                pin = abs(value)-1
+                event = value>0
+                delay = step - last_event
+
+                if event:
+                    waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
+                else:
+                    waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
+                last_event = step
+
+        if pi_here:
+            pi.wave_clear()
+            pi.wave_add_generic(waveforms)
+            waveforms_id = pi.wave_create()
+
+            pi.wave_send_repeat(waveforms_id)
+
+
+    else:
+        pi.wave_tx_stop()
+        print("no note playing")
+        pi.wave_clear()
+
+        pi.write(pins[0],0)
+        pi.write(pins[1],0)
+        pi.write(pins[2],0)
+            
 
 print("listening")
 
@@ -97,8 +163,6 @@ with mido.open_input() as inport:
     for msg in inport:
         pi.wave_tx_stop()
         if msg.type == 'note_on':
-
-            #note is being hit
 
             #look for empty register
             hit_empty = np.where(freqs == 0)[0]
@@ -113,6 +177,8 @@ with mido.open_input() as inport:
             freqs[writereg] = midi2freq(msg.note)
             starts[writereg] = time.time()
             print(f"writing {freqs[writereg]}Hz to pin {writereg}")
+            
+            updating_pulses()
 
         elif msg.type == 'note_off':
 
@@ -121,79 +187,27 @@ with mido.open_input() as inport:
             if hit_note.size:
                 delreg = hit_note[0]
                 freqs[delreg] = 0
-                print(f"taking wave from pin {delreg}")
+                print(f"taking freq {midi2freq(msg.note)}Hz from pin {delreg}")
+                
+            updating_pulses()
+            
         elif msg.type == "control_change":
             if msg.control == 1:
                 duty = msg.value/127
                 print(f"setting duty to {duty}")
             elif msg.control == 2:
 
-                overall_cycle = int(a/2**int(msg.value*b))
-                factor = factor_max/2**int(msg.value/midi_knob_top*math.log2(factor_max/factor_min))
+                overall_cycle = cycles[msg.value]
+                factor = factors[msg.value]
+                
                 if factor < 1:
                     print(f"LFO: 1/{int(1/factor)}")
                 else:
                     print(f"LFO: {int(factor)}")
-        #writing pulses
+                    
+            updating_pulses()
+        
 
-        def save_div(a,b):
-            if b == 0:
-                return 0
-            else:
-                return int(a/b)
-
-        cycles = np.array([save_div(steps,freq) for freq in freqs])
-
-        if sum(cycles):
-            events = {}
-            for i, cycle in enumerate(cycles):
-                if cycle:
-                    for j in list(range(0, overall_cycle, cycle)):
-                        if j not in events:
-                            events[j] = [i+1]
-                        else:
-                            events[j].append(i+1)
-
-                        k = j + int(cycle*duty)
-                        if k not in events:
-                            events[k] = [-(i+1)]
-                        else:
-                            events[k].append(-(i+1))
-
-            waveforms = []
-
-            last_event = 0
-
-            events_sorted = dict(sorted(events.items()))
-
-            for step, values in events_sorted.items():
-                for value in values:
-                    pin = abs(value)-1
-                    event = value>0
-                    delay = step - last_event
-
-                    if event:
-                        waveforms.append(pigpio.pulse(1<<pins[pin], 1<<zero, delay))
-                    else:
-                        waveforms.append(pigpio.pulse(1<<zero, 1<<pins[pin], delay))
-                    last_event = step
-
-            if pi_here:
-                pi.wave_clear()
-                pi.wave_add_generic(waveforms)
-                waveforms_id = pi.wave_create()
-
-                pi.wave_send_repeat(waveforms_id)
-
-
-            else:
-                pi.wave_tx_stop()
-                print("no note playing")
-                pi.wave_clear()
-
-                pi.write(pins[0],0)
-                pi.write(pins[1],0)
-                pi.write(pins[2],0)
 
 
 @atexit.register
