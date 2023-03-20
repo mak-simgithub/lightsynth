@@ -81,6 +81,12 @@ factor_max = 4
 factor_min = 1/32
 
 midi_knob_top = 124
+midi_knob_update = 5
+
+bpm_top = 200
+bpm_low = 40
+
+bpms = [int(40+i*(bpm_top-bpm_low)/127) for i in range(128)]
 
 a = steps*60/bpm*factor_max
 b = 1/midi_knob_top*math.log2(factor_max/factor_min)
@@ -88,11 +94,13 @@ b = 1/midi_knob_top*math.log2(factor_max/factor_min)
 cycles = [int(a/2**int(i*b)) for i in range(128)]
 factors = [factor_max/2**int(i/midi_knob_top*math.log2(factor_max/factor_min)) for i in range(128)]
 
+duties = [0.5+i/127*0.49 for i in range(128)]
+
 start_midi_lfo = 12
 overall_cycle = cycles[start_midi_lfo]
 
 start_midi_duty = 64
-duty = int(start_midi_duty/127)
+duty = duties[start_midi_duty]
 
 def updating_pulses():
     #writing pulses
@@ -173,6 +181,11 @@ with mido.open_input() as inport:
             else:
                 #look for oldest register
                 writereg = np.argmin(starts)
+                
+            starts_modified = starts+freqs*time.time()
+            writereg2 = np.argmin(starts_modified)
+            
+            print(f"reg1: {writereg}, reg2: {writereg2}")
 
             freqs[writereg] = midi2freq(msg.note)
             starts[writereg] = time.time()
@@ -193,20 +206,30 @@ with mido.open_input() as inport:
             
         elif msg.type == "control_change":
             if msg.control == 1:
-                duty = msg.value/127
+                duty = duties[msg.value]
                 print(f"setting duty to {duty}")
+                
+                if msg.value%midi_knob_update == 0:
+                    updating_pulses()
+                
             elif msg.control == 2:
 
                 overall_cycle = cycles[msg.value]
                 factor = factors[msg.value]
                 
                 if factor < 1:
-                    print(f"LFO: 1/{int(1/factor)}")
+                    print(f"lfo: 1/{int(1/factor)}")
                 else:
-                    print(f"LFO: {int(factor)}")
+                    print(f"lfo: {int(factor)}")
                     
-            updating_pulses()
-        
+                if msg.value%midi_knob_update == 0:
+                    updating_pulses()
+            
+            elif msg.control == 3:
+                bpm = bpms[msg.value]
+                print(f"bpm: {bpm}")
+                updating_pulses()
+                
 
 
 
