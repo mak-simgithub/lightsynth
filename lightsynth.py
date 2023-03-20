@@ -14,6 +14,7 @@ import mido
 from audiolazy import midi2freq
 import numpy as np
 import time
+import signal
 import atexit
 import math
 
@@ -39,6 +40,21 @@ if pi_here:
         pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         print(f"setting pin {pin} to input with pulldown")
     pi.set_mode(zero, pigpio.OUTPUT)
+
+def setting_pins_low():
+    print("exiting now, goodbye")
+    if pi_here:
+        pi.wave_tx_stop()
+
+        pi.wave_clear()
+
+        pi.write(pins[0],0)
+        pi.write(pins[1],0)
+        pi.write(pins[2],0)
+        
+atexit.register(setting_pins_low)
+signal.signal(signal.SIGTERM, setting_pins_low)
+signal.signal(signal.SIGINT, setting_pins_low)
 
 stream = os.popen('aconnect -l')
 output = stream.read()
@@ -230,15 +246,3 @@ with mido.open_input() as inport:
                 
 
 
-
-@atexit.register
-def setting_pins_low():
-    print("exiting now, goodbye")
-    if pi_here:
-        pi.wave_tx_stop()
-
-        pi.wave_clear()
-
-        pi.write(pins[0],0)
-        pi.write(pins[1],0)
-        pi.write(pins[2],0)
