@@ -39,6 +39,10 @@ if pi_here:
         pi.set_mode(pin, pigpio.OUTPUT)
         pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         print(f"setting pin {pin} to input with pulldown")
+        pi.write(pins[0],1)
+        pi.write(pins[1],0)
+        pi.write(pins[2],1)
+        
     pi.set_mode(zero, pigpio.OUTPUT)
 
 def setting_pins_low(*args):
@@ -48,9 +52,9 @@ def setting_pins_low(*args):
 
         pi.wave_clear()
 
-        pi.write(pins[0],1)
+        pi.write(pins[0],0)
         pi.write(pins[1],0)
-        pi.write(pins[2],1)
+        pi.write(pins[2],0)
         
 atexit.register(setting_pins_low)
 
