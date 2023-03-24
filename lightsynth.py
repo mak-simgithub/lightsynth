@@ -14,7 +14,7 @@ import mido
 from audiolazy import midi2freq
 import numpy as np
 import time
-import signal
+
 import atexit
 import math
 
@@ -48,13 +48,12 @@ def setting_pins_low(*args):
 
         pi.wave_clear()
 
-        pi.write(pins[0],0)
+        pi.write(pins[0],1)
         pi.write(pins[1],0)
-        pi.write(pins[2],0)
+        pi.write(pins[2],1)
         
 atexit.register(setting_pins_low)
-#signal.signal(signal.SIGTERM, setting_pins_low)
-#signal.signal(signal.SIGINT, setting_pins_low)
+
 
 stream = os.popen('aconnect -l')
 output = stream.read()
@@ -120,6 +119,7 @@ duty = duties[start_midi_duty]
 
 def updating_pulses():
     #writing pulses
+    print("updating pulses")
 
     def save_div(a,b):
         if b == 0:
@@ -243,6 +243,3 @@ with mido.open_input() as inport:
                 bpm = bpms[msg.value]
                 print(f"bpm: {bpm}")
                 updating_pulses()
-                
-
-
