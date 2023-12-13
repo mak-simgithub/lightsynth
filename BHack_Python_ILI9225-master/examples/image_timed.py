@@ -18,6 +18,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath('/home/pi/repos/lightsynth/BHack_Python_ILI9225-master/BHack_ILI9225')))
+
+
 from PIL import Image
 import time
 import BHack_ILI9225 as TFT
@@ -26,7 +32,7 @@ import Adafruit_GPIO.SPI as SPI
 
 
 # Raspberry Pi configuration.
-RS = 18
+RS = 8
 RST = 23
 SPI_PORT = 0
 SPI_DEVICE = 0

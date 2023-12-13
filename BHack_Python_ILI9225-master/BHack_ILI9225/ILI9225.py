@@ -272,16 +272,16 @@ class ILI9225(object):
 #
 #       self.command(ILI9225_RAMWR)        # write to RAM
 
-	self.command(ILI9225_HORIZONTAL_WINDOW_ADDR1).data(x1);
-	self.command(ILI9225_HORIZONTAL_WINDOW_ADDR2).data(x0);
+        self.command(ILI9225_HORIZONTAL_WINDOW_ADDR1).data(x1);
+        self.command(ILI9225_HORIZONTAL_WINDOW_ADDR2).data(x0);
 
-	self.command(ILI9225_VERTICAL_WINDOW_ADDR1).data(y1);
-	self.command(ILI9225_VERTICAL_WINDOW_ADDR2).data(y0);
+        self.command(ILI9225_VERTICAL_WINDOW_ADDR1).data(y1);
+        self.command(ILI9225_VERTICAL_WINDOW_ADDR2).data(y0);
 
-	self.command(ILI9225_RAM_ADDR_SET1).data(x0);
-	self.command(ILI9225_RAM_ADDR_SET2).data(y0);
+        self.command(ILI9225_RAM_ADDR_SET1).data(x0);
+        self.command(ILI9225_RAM_ADDR_SET2).data(y0);
 
-	self.command([0x00, 0x22]);
+        self.command([0x00, 0x22]);
 
     def display(self, image=None):
         """Write the display buffer or provided image to the hardware.  If no
