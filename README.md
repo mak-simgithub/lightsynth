@@ -5,20 +5,20 @@ lightsynth is a project that creates sounds from a solar cell that is illuminate
 
 To run on a Raspberry Pi Zero project, clone repo and install dependencies:
 
-    `sudo apt install python-dev`
-    `sudo apt install libatlas-base-dev`
-    `sudo apt-get install libopenblas-dev`
-    `sudo apt install jackd2`
-    `sudo apt install python-gpio python3-pigpio`
-    `sudo apt-get install libopenjp2-7`
+    sudo apt install python-dev
+    sudo apt install libatlas-base-dev
+    sudo apt-get install libopenblas-dev
+    sudo apt install jackd2
+    sudo apt install python-gpio python3-pigpio
+    sudo apt-get install libopenjp2-7
 
 
 then set up virtaulenv with:
 
-    `python3 -m venv virtualenv`
-    `source virtualenv/bin/activate`
-    `pip3 install -r requirements.txt`
+    python3 -m venv virtualenv
+    source virtualenv/bin/activate
+    pip3 install -r requirements.txt
 
 then
 
-    'python3 lightsynth.py'
+    python3 lightsynth.py
